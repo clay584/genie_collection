@@ -25,10 +25,6 @@ options:
         description:
             - The network device that PyATS/Genie should connect to
         required: true
-    device_hostname:
-        description:
-            - The device hostname as it shows at the device prompt
-        required: true
     port:
         description:
             - The port number for SSH on the device
@@ -76,14 +72,13 @@ feature_data:
     returned: always
 """
 
-import os
 import json
 import importlib
 from pathlib import Path
 from ansible.module_utils.basic import AnsibleModule
 from ansible.errors import AnsibleError
 from ansible.module_utils.six import string_types
-from pyats.topology import Testbed, Device
+from ansible.module_utils._text import to_native
 
 
 try:
@@ -103,7 +98,6 @@ def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
         host=dict(type="str", required=True),
-        device_hostname=dict(type='str', required=True),
         port=dict(type="int", required=False),
         username=dict(type="str", required=True),
         password=dict(type="str", required=True),
@@ -126,8 +120,10 @@ def run_module():
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
 
     host = module.params["host"]
-    hostname = module.params['device_hostname']
-    port = module.params["port"]
+    if module.params.get("port") is not None:
+        port = module.params["port"]
+    else:
+        port = 22
     username = module.params["username"]
     password = module.params["password"]
     os = module.params["os"]
@@ -142,18 +138,19 @@ def run_module():
 
     # Check user input
     for k, v in module.params.items():
-        if k == "port":
+        if k == "port" and v is not None:
             if not isinstance(v, int):
                 raise AnsibleError(
                     "The {} parameter must be an integer between 0-65535".format(k)
                 )
         else:
-            if not isinstance(v, string_types):
-                raise AnsibleError(
-                    "The {} parameter must be a string such as a hostname or IP address.".format(
-                        k
+            if k != "port":
+                if not isinstance(v, string_types):
+                    raise AnsibleError(
+                        "The {} parameter must be a string such as a hostname or IP address.".format(
+                            k
+                        )
                     )
-                )
 
     # Is the os param one of the Genie support OSes?
     if module.params["os"] not in ["ios", "iosxe", "iosxr", "nxos"]:
@@ -175,47 +172,17 @@ def run_module():
 
     if feature not in supported_features:
         raise AnsibleError(
-            "The feature entered is not supported on the current version of Genie."
+            "The feature entered is not supported on the current version of Genie.\nCurrently supported features: {0}\n{1}".format(
+                to_native(supported_features),
+                "https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/models",
+            )
         )
-
-    # # create your testbed
-    # testbed = Testbed('myTestbed',
-    #                   alias='testbed',
-    #                   )
-    #
-    # # create your devices
-    # device = Device(hostname,
-    #                 alias='sw',
-    #                 tacacs={
-    #                     'username': username,
-    #                     'login_prompt': 'login:',
-    #                     'password_prompt': 'Password:',
-    #                 },
-    #                 passwords={
-    #                     'tacacs': password,
-    #                     'enable': password,
-    #                     'line': password,
-    #                 },
-    #                 connections={
-    #                     'a': {
-    #                         'protocol': 'ssh',
-    #                         'ip': hostname,
-    #                         'port': port,
-    #                     }
-    #                 })
-
-    # now let's hook up everything together
-    # define the relationship.
-    # device.testbed = testbed
-
-    # dev = getattr(testbed.devices, hostname)
-    # dev.connect()
 
     from genie.testbed import load
 
     o = {
         "devices": {
-            hostname: {
+            host: {
                 "ip": host,
                 "port": port,
                 "protocol": "ssh",
@@ -226,8 +193,8 @@ def run_module():
         }
     }
     testbed = load(o)
-    dev = testbed.devices[hostname]
-    dev.connect()
+    dev = testbed.devices[host]
+    dev.connect(learn_hostname=True)
     output = dev.learn(feature)
 
     result["feature_data"] = output.info
