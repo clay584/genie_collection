@@ -1,0 +1,12 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "host": "sbx-nxos-mgmt.cisco.com",
+        "device_hostname": "sbx-n9kv-ao",
+        "port": 8181,
+        "username": "admin",
+        "password": "Admin_1234!",
+        "os": "nxos",
+        "connection":"unicon",
+        "feature": "interface"
+    }
+}
