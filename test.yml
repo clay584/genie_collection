@@ -1,12 +1,12 @@
 ---
 
-- hosts: localhost
+- hosts: all
   gather_facts: no
   connection: local
   tasks:
   - name: Test Learn Genie
     learn_genie:
-      host: sbx-nxos-mgmt.cisco.com
+      host: "{{ ansible_host }}"
       port: 8181
       username: admin
       password: Admin_1234!
@@ -24,7 +24,7 @@
 
   - name: Test Learn Genie 2
     learn_genie:
-      host: sbx-nxos-mgmt.cisco.com
+      host: "{{ ansible_host }}"
       port: 8181
       username: admin
       password: Admin_1234!
