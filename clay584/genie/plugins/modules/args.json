@@ -5,7 +5,6 @@
         "username": "admin",
         "password": "Admin_1234!",
         "os": "nxos",
-        "feature": "arp",
-        "exclude": "test"
+        "feature": "arp"
     }
 }

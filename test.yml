@@ -32,6 +32,7 @@
       feature: "{{ feature }}"
       compare_to: "{{ genie1 }}"
 #      exclude: "{{ [''] }}"
+#      colors: yes
     register: genie2
     diff: yes
 

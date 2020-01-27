@@ -53,6 +53,14 @@ options:
         description:
             - Exclude noisy keys such as packet counters, timestamps, uptime, etc.
         required: false
+    no_default_exclusion:
+        description:
+            - Do not exclude any noisy keys in the Genie diff operation such as packet counters, timestamps, uptime, etc.
+        required: false
+    colors:
+        description:
+            - Turn on or off colored diff output. Defaults to on (colored output). Requires Python package "colorama".
+        required: false
 
 # extends_documentation_fragment:
 #     - azure
@@ -136,7 +144,8 @@ def run_module():
         os=dict(type="str", required=True),
         feature=dict(type="str", required=True),
         compare_to=dict(type="raw", required=False),
-        exclude=dict(type="list", required=False)
+        exclude=dict(type="list", required=False),
+        colors=dict(type="bool", required=False)
     )
     # print(type(module_args['compare_to']))
     # seed the result dict in the object
@@ -166,6 +175,12 @@ def run_module():
         compare_to = module.params.get("compare_to")
     if module.params.get("exclude"):
         excluded_keys = module.params.get("exclude")
+    if module.params.get("colors") is False:
+        colors = False
+    elif module.params.get("colors") is not None:
+        colors = False
+    else:
+        colors = True
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -185,6 +200,8 @@ def run_module():
         elif k == "port":
             pass
         elif k == "exclude":
+            pass
+        elif k == "colors":
             pass
         else:
             if not isinstance(v, string_types):
@@ -286,7 +303,10 @@ def run_module():
             else:
                 dd = Diff(before, current)
         dd.findDiff()
-        result.update({"diff": {"prepared": '\n'.join(color_diff(str(dd)))}})
+        if colors:
+            result.update({"diff": {"prepared": '\n'.join(color_diff(str(dd)))}})
+        else:
+            result.update({"diff": {"prepared": str(dd)}})
         module._diff = True
         if len(str(dd)) > 0:
             result['changed'] = True
