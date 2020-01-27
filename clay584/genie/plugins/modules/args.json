@@ -6,8 +6,6 @@
         "password": "Admin_1234!",
         "os": "nxos",
         "feature": "arp",
-        "compare_to": {
-            "key": "val"
-        }
+        "exclude": "test"
     }
 }

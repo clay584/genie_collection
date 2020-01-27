@@ -11,16 +11,16 @@
       username: admin
       password: Admin_1234!
       os: nxos
-      feature: interface
+      feature: "{{ feature }}"
     register: genie1
 
 #  - name: Debug1
 #    debug:
-#      msg: "{{ genie_arp1 }}"
+#      msg: "{{ genie1 }}"
 
-  - name: Wait for manual changes for testing
-    pause:
-      seconds: 500
+#  - name: Wait for manual changes for testing
+#    pause:
+#      seconds: 500
 
   - name: Test Learn Genie 2
     learn_genie:
@@ -29,8 +29,9 @@
       username: admin
       password: Admin_1234!
       os: nxos
-      feature: interface
+      feature: "{{ feature }}"
       compare_to: "{{ genie1 }}"
+#      exclude: "{{ [''] }}"
     register: genie2
     diff: yes
 

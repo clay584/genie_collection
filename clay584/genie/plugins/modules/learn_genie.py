@@ -44,9 +44,15 @@ options:
     feature:
         description:
             - The device feature to be learned from the device
+        required: true
     compare_to:
         description:
             - Compare to prior genie learn data (diff)
+        required: false
+    exclude:
+        description:
+            - Exclude noisy keys such as packet counters, timestamps, uptime, etc.
+        required: false
 
 # extends_documentation_fragment:
 #     - azure
@@ -130,7 +136,7 @@ def run_module():
         os=dict(type="str", required=True),
         feature=dict(type="str", required=True),
         compare_to=dict(type="raw", required=False),
-        # exclude_keys=dict(type="list", required=False)
+        exclude=dict(type="list", required=False)
     )
     # print(type(module_args['compare_to']))
     # seed the result dict in the object
@@ -158,8 +164,8 @@ def run_module():
     if module.params.get("compare_to"):
         # compare_to = json.loads(module.params.get("compare_to"))
         compare_to = module.params.get("compare_to")
-    if module.params.get("exclude_keys"):
-        excluded_keys = module.params.get("exclude_keys")
+    if module.params.get("exclude"):
+        excluded_keys = module.params.get("exclude")
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -178,6 +184,8 @@ def run_module():
             pass
         elif k == "port":
             pass
+        elif k == "exclude":
+            pass
         else:
             if not isinstance(v, string_types):
                 raise AnsibleError(
@@ -192,6 +200,30 @@ def run_module():
     with open(ops_file_obj, "r") as f:
         ops_json = json.load(f)
     supported_features = [k for k, _ in ops_json.items()]
+
+    # Load in default exclusions for diffs for all features for genie learn
+    # genie_yamls = importlib.util.find_spec("genie.libs.sdk.genie_yamls")
+    # genie_excludes = Path(genie_yamls.origin).parent.joinpath("pts_datafile.yaml")
+    # with open(genie_excludes, "r") as f:
+    #     diff_excludes = json.load(f)
+    # supported_features = [k for k, _ in ops_json.items()]
+
+    default_excludes = {}
+    from importlib import import_module
+    for i in supported_features:
+        modulename = "genie.libs.ops.{}.{}".format(i, i)
+        package_name = i.capitalize()
+        try:
+            this_module = import_module(modulename, package_name)
+            this_class = getattr(this_module, package_name)
+            this_excludes = this_class.exclude
+            default_excludes.update({i: this_excludes})
+        except AttributeError:
+            default_excludes.update({i: []})
+
+        # this_module = __import__(modulename)
+        # default_excludes.append({i: this_module.i)
+        # from genie.libs.ops.i.i import Interface
 
     # Is the feature even supported?
     if feature not in supported_features:
@@ -242,12 +274,22 @@ def run_module():
         #     f.write(json.dumps(output.info))
 
         before = compare_to['genie'][feature]
-        current = eval(str(output.info))
-        dd = Diff(before, current)
+        current = json.dumps(output.info)
+        current = json.loads(current)
+        # current = eval(str(output.info))
+        try:
+            excluded_keys
+            dd = Diff(before, current, exclude=excluded_keys)
+        except NameError:
+            if len(default_excludes[feature]) > 0:
+                dd = Diff(before, current, exclude=default_excludes[feature])
+            else:
+                dd = Diff(before, current)
         dd.findDiff()
         result.update({"diff": {"prepared": '\n'.join(color_diff(str(dd)))}})
         module._diff = True
-        result['changed'] = True
+        if len(str(dd)) > 0:
+            result['changed'] = True
 
     feature_data = {
         feature: output.info
