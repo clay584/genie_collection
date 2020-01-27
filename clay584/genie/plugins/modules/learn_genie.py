@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
+# Copyright: (c) 2020, Clay Curtis <jccurtis@presidio.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 ANSIBLE_METADATA = {
@@ -41,10 +41,6 @@ options:
         description:
             - Network operating system of the device
         required: true
-    connection:
-        description:
-            - What connection mechanism used. Currently, only unicon is supported.
-        required: false
     feature:
         description:
             - The device feature to be learned from the device
@@ -57,10 +53,12 @@ author:
 """
 
 EXAMPLES = """
-# Learn a feature
+# Learn the state of BGP
 - name: Learn BGP Feature
   learn_genie:
     host: 10.1.1.1
+    username: admin
+    password: password1234
     os: iosxe
     feature: bgp
 """
@@ -102,7 +100,6 @@ def run_module():
         username=dict(type="str", required=True),
         password=dict(type="str", required=True),
         os=dict(type="str", required=True),
-        connection=dict(type="str", required=False),
         feature=dict(type="str", required=True),
     )
 
@@ -127,7 +124,6 @@ def run_module():
     username = module.params["username"]
     password = module.params["password"]
     os = module.params["os"]
-    connection = module.params["connection"]
     feature = module.params["feature"]
 
     # if the user is working with this module in only check mode we do not
@@ -139,7 +135,7 @@ def run_module():
     # Check user input
     for k, v in module.params.items():
         if k == "port" and v is not None:
-            if not isinstance(v, int):
+            if not isinstance(v, int) and v not in range(1-65535):
                 raise AnsibleError(
                     "The {} parameter must be an integer between 0-65535".format(k)
                 )
@@ -152,24 +148,14 @@ def run_module():
                         )
                     )
 
-    # Is the os param one of the Genie support OSes?
-    if module.params["os"] not in ["ios", "iosxe", "iosxr", "nxos"]:
-        raise AnsibleError(
-            "The os parameter must be one of ios, iosxe, nxos, or iosxr."
-        )
-    # Is the connection param one of the supported methods?
-    if module.params["connection"] not in ["unicon"]:
-        raise AnsibleError(
-            "The connection parameter must be unicon. Other connection types not supported at this time."
-        )
-
-    # Did the user pass in a feature that is supported?
+    # Did the user pass in a feature that is supported on a given platform
     genie_ops = importlib.util.find_spec("genie.libs.ops")
     ops_file_obj = Path(genie_ops.origin).parent.joinpath("ops.json")
     with open(ops_file_obj, "r") as f:
         ops_json = json.load(f)
     supported_features = [k for k, _ in ops_json.items()]
 
+    # Is the feature even supported?
     if feature not in supported_features:
         raise AnsibleError(
             "The feature entered is not supported on the current version of Genie.\nCurrently supported features: {0}\n{1}".format(
@@ -178,9 +164,18 @@ def run_module():
             )
         )
 
-    from genie.testbed import load
+    # Is the feature supported on the OS that was provided from the user?
+    for f in ops_json.items():
+        if feature == f[0]:
+            if os not in [k for k, _ in f[1].items()]:
+                raise AnsibleError(
+                    "The {0} feature entered is not supported on {1}.\nCurrently supported features & platforms:\n{2}".format(
+                        feature, os,
+                        "https://pubhub.devnetcloud.com/media/genie-feature-browser/docs/#/models",
+                    )
+                )
 
-    o = {
+    testbed = {
         "devices": {
             host: {
                 "ip": host,
@@ -192,8 +187,8 @@ def run_module():
             }
         }
     }
-    testbed = load(o)
-    dev = testbed.devices[host]
+    tb = load(testbed)
+    dev = tb.devices[host]
     dev.connect(learn_hostname=True)
     output = dev.learn(feature)
 
