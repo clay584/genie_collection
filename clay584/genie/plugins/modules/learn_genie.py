@@ -147,6 +147,7 @@ def run_module():
         exclude=dict(type="list", required=False),
         colors=dict(type="bool", required=False)
     )
+    # TODO: Add protocol so Unicon can use anything
     # print(type(module_args['compare_to']))
     # seed the result dict in the object
     # we primarily care about changed and state
