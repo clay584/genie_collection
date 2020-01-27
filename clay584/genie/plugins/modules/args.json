@@ -5,6 +5,9 @@
         "username": "admin",
         "password": "Admin_1234!",
         "os": "nxos",
-        "feature": "arp"
+        "feature": "arp",
+        "compare_to": {
+            "key": "val"
+        }
     }
 }

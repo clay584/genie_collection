@@ -1,0 +1,39 @@
+---
+
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+  - name: Test Learn Genie
+    learn_genie:
+      host: sbx-nxos-mgmt.cisco.com
+      port: 8181
+      username: admin
+      password: Admin_1234!
+      os: nxos
+      feature: interface
+    register: genie1
+
+#  - name: Debug1
+#    debug:
+#      msg: "{{ genie_arp1 }}"
+
+  - name: Wait for manual changes for testing
+    pause:
+      seconds: 500
+
+  - name: Test Learn Genie 2
+    learn_genie:
+      host: sbx-nxos-mgmt.cisco.com
+      port: 8181
+      username: admin
+      password: Admin_1234!
+      os: nxos
+      feature: interface
+      compare_to: "{{ genie1 }}"
+    register: genie2
+    diff: yes
+
+#  - name: Debug2
+#    debug:
+#      msg: "{{ genie2 }}"

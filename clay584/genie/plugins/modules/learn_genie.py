@@ -44,6 +44,9 @@ options:
     feature:
         description:
             - The device feature to be learned from the device
+    compare_to:
+        description:
+            - Compare to prior genie learn data (diff)
 
 # extends_documentation_fragment:
 #     - azure
@@ -81,7 +84,7 @@ from ansible.module_utils._text import to_native
 
 try:
     from genie.testbed import load
-
+    from genie.utils.diff import Diff
     HAS_GENIE = True
 except ImportError:
     HAS_GENIE = False
@@ -91,6 +94,31 @@ if not HAS_GENIE:
         "You must have PyATS/Genie packages installed on the Ansible control node!"
     )
 
+try:
+    from colorama import Fore, Back, Style, init
+    init()
+except ImportError:  # fallback so that the imported classes always exist
+    class ColorFallback():
+        __getattr__ = lambda self, name: ''
+    Fore = Back = Style = ColorFallback()
+
+
+def color_diff(diff):
+    diff_list = diff.splitlines()
+    for line in diff_list:
+        if line.startswith('+++'):
+            yield Fore.WHITE + line + Fore.RESET
+        elif line.startswith('---'):
+            yield Fore.WHITE + line + Fore.RESET
+        elif line.startswith('+'):
+            yield Fore.GREEN + line + Fore.RESET
+        elif line.startswith('-'):
+            yield Fore.RED + line + Fore.RESET
+        elif line.startswith('@@'):
+            yield Fore.BLUE + line + Fore.RESET
+        else:
+            yield line
+
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -98,17 +126,19 @@ def run_module():
         host=dict(type="str", required=True),
         port=dict(type="int", required=False),
         username=dict(type="str", required=True),
-        password=dict(type="str", required=True),
+        password=dict(type="str", required=True, no_log=True),
         os=dict(type="str", required=True),
         feature=dict(type="str", required=True),
+        compare_to=dict(type="raw", required=False),
+        # exclude_keys=dict(type="list", required=False)
     )
-
+    # print(type(module_args['compare_to']))
     # seed the result dict in the object
     # we primarily care about changed and state
     # change is if this module effectively modified the target
     # state will include any data that you want your module to pass back
     # for consumption, for example, in a subsequent task
-    result = dict(changed=False, feature_data="")
+    result = dict(changed=False)
 
     # the AnsibleModule object will be our abstraction working with Ansible
     # this includes instantiation, a couple of common attr would be the
@@ -125,6 +155,11 @@ def run_module():
     password = module.params["password"]
     os = module.params["os"]
     feature = module.params["feature"]
+    if module.params.get("compare_to"):
+        # compare_to = json.loads(module.params.get("compare_to"))
+        compare_to = module.params.get("compare_to")
+    if module.params.get("exclude_keys"):
+        excluded_keys = module.params.get("exclude_keys")
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -139,14 +174,17 @@ def run_module():
                 raise AnsibleError(
                     "The {} parameter must be an integer between 0-65535".format(k)
                 )
+        elif k == "compare_to":
+            pass
+        elif k == "port":
+            pass
         else:
-            if k != "port":
-                if not isinstance(v, string_types):
-                    raise AnsibleError(
-                        "The {} parameter must be a string such as a hostname or IP address.".format(
-                            k
-                        )
+            if not isinstance(v, string_types):
+                raise AnsibleError(
+                    "The {} parameter must be a string such as a hostname or IP address.".format(
+                        k
                     )
+                )
 
     # Did the user pass in a feature that is supported on a given platform
     genie_ops = importlib.util.find_spec("genie.libs.ops")
@@ -189,10 +227,33 @@ def run_module():
     }
     tb = load(testbed)
     dev = tb.devices[host]
-    dev.connect(learn_hostname=True)
+    dev.connect(log_stdout=False, learn_hostname=True)
     output = dev.learn(feature)
 
-    result["feature_data"] = output.info
+    # Do diff if compare_to was provided
+    if module.params.get("compare_to"):
+        # do genie diff
+        # print(type(compare_to['genie'][feature]))
+        # print(type(output.info))
+        # dd = Diff({"a": "yes"}, {"a": "no"})
+        # with open('/tmp/compare_to.txt', 'w') as f:
+        #     f.write(json.dumps(compare_to['genie'][feature]))
+        # with open('/tmp/output.txt', 'w') as f:
+        #     f.write(json.dumps(output.info))
+
+        before = compare_to['genie'][feature]
+        current = eval(str(output.info))
+        dd = Diff(before, current)
+        dd.findDiff()
+        result.update({"diff": {"prepared": '\n'.join(color_diff(str(dd)))}})
+        module._diff = True
+        result['changed'] = True
+
+    feature_data = {
+        feature: output.info
+    }
+
+    result.update({"genie": feature_data})
 
     # use whatever logic you need to determine whether or not this module
     # made any modifications to your target
