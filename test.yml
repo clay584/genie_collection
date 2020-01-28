@@ -8,15 +8,16 @@
     learn_genie:
       host: "{{ ansible_host }}"
       port: 8181
+      protocol: ssh
       username: admin
       password: Admin_1234!
       os: nxos
       feature: "{{ feature }}"
     register: genie1
 
-#  - name: Debug1
-#    debug:
-#      msg: "{{ genie1 }}"
+  - name: Debug1
+    debug:
+      msg: "{{ genie1 }}"
 
 #  - name: Wait for manual changes for testing
 #    pause:
@@ -26,16 +27,18 @@
     learn_genie:
       host: "{{ ansible_host }}"
       port: 8181
+      protocol: ssh
       username: admin
       password: Admin_1234!
       os: nxos
       feature: "{{ feature }}"
       compare_to: "{{ genie1 }}"
-#      exclude: "{{ [''] }}"
-#      colors: yes
+#      exclude: "{{ ['in_requests_pkts'] }}"
+      no_default_exclusion: true
+      colors: yes
     register: genie2
     diff: yes
 
-#  - name: Debug2
-#    debug:
-#      msg: "{{ genie2 }}"
+  - name: Debug2
+    debug:
+      msg: "{{ genie2 }}"

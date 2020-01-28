@@ -98,6 +98,7 @@ from ansible.module_utils._text import to_native
 
 try:
     from genie.testbed import load
+    # from pyats.topology import loader
     from genie.utils.diff import Diff
     HAS_GENIE = True
 except ImportError:
@@ -139,12 +140,14 @@ def run_module():
     module_args = dict(
         host=dict(type="str", required=True),
         port=dict(type="int", required=False),
+        protocol=dict(type="str", required=False),
         username=dict(type="str", required=True),
         password=dict(type="str", required=True, no_log=True),
         os=dict(type="str", required=True),
         feature=dict(type="str", required=True),
         compare_to=dict(type="raw", required=False),
         exclude=dict(type="list", required=False),
+        no_default_exclusion=dict(type="bool", required=False),
         colors=dict(type="bool", required=False)
     )
     # TODO: Add protocol so Unicon can use anything
@@ -176,12 +179,22 @@ def run_module():
         compare_to = module.params.get("compare_to")
     if module.params.get("exclude"):
         excluded_keys = module.params.get("exclude")
+    if module.params.get("no_default_exclusion") is False:
+        no_default_exclusion = False
+    elif module.params.get("no_default_exclusion") is None:
+        no_default_exclusion = False
+    else:
+        no_default_exclusion = True
     if module.params.get("colors") is False:
         colors = False
     elif module.params.get("colors") is not None:
-        colors = False
+        colors = True
     else:
         colors = True
+    if module.params.get("protocol") == "telnet":
+        protocol = "telnet"
+    else:
+        protocol = "ssh"
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -203,6 +216,10 @@ def run_module():
         elif k == "exclude":
             pass
         elif k == "colors":
+            pass
+        elif k == "no_default_exclusion":
+            pass
+        elif k == "protocol":
             pass
         else:
             if not isinstance(v, string_types):
@@ -268,13 +285,14 @@ def run_module():
             host: {
                 "ip": host,
                 "port": port,
-                "protocol": "ssh",
+                "protocol": protocol,
                 "username": username,
                 "password": password,
                 "os": os,
             }
         }
     }
+
     tb = load(testbed)
     dev = tb.devices[host]
     dev.connect(log_stdout=False, learn_hostname=True)
@@ -297,10 +315,17 @@ def run_module():
         # current = eval(str(output.info))
         try:
             excluded_keys
-            dd = Diff(before, current, exclude=excluded_keys)
+            if no_default_exclusion:
+                merged_exclusions = excluded_keys
+            else:
+                merged_exclusions = list(set().union(excluded_keys, default_excludes[feature]))
+            dd = Diff(before, current, exclude=merged_exclusions)
         except NameError:
             if len(default_excludes[feature]) > 0:
-                dd = Diff(before, current, exclude=default_excludes[feature])
+                if no_default_exclusion:
+                    dd = Diff(before, current)
+                else:
+                    dd = Diff(before, current, exclude=default_excludes[feature])
             else:
                 dd = Diff(before, current)
         dd.findDiff()

@@ -2,9 +2,12 @@
     "ANSIBLE_MODULE_ARGS": {
         "host": "sbx-nxos-mgmt.cisco.com",
         "port": 8181,
+        "protocol": "ssh",
         "username": "admin",
         "password": "Admin_1234!",
         "os": "nxos",
-        "feature": "arp"
+        "feature": "arp",
+        "exclude": ["test123"],
+        "no_default_exclusion": true
     }
 }
