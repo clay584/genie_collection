@@ -43,13 +43,13 @@ will be in this collection.
 | Parameter     | Choices/Defaults | Comments      |
 | ------------- | :-------------:    | ------------- |
 | host (string)  |      | The network device hostname/IP address.          |
-| port (int) (1-65535)  | Choices: 1-65,535, Default: 22     | The port to connect to.          |
+| port (int)  | Choices: 1-65,535, Default: 22     | The port to connect to.          |
 | protocol (str)  | Choices: telnet, ssh, Default: ssh     | The protocol used for connectivity to the device.         |
 | username (string) |      | The username for connecting to the device with.          |
 | password (string) |      | The password for connecting to the device with.          |
 | os (string) |   Choices: Any of the supported Cisco Genie operating systems.   | The operating system of the network device.          |
 | feature (string) |   Choices: Any of the supported Cisco Genie Learn features.   | The network feature to learn (i.e. - arp, interface, bgp).          |
-| compare_to |  Previous `learn_genie` registered output.    | The output as collected from the `learn_genie` module with Ansible `register`. This is needed in order to `diff` two `learn_genie` runs.          |
+| compare_to (dict) |  Previous `learn_genie` registered output.    | The output as collected from the `learn_genie` module with Ansible `register`. This is needed in order to `diff` two `learn_genie` runs.          |
 | exclude (list) |  List of noisy dict keys to exclude from `diff`.    | The default will use Genie's built-in defaults. This can be used to exclude additional keys from the `diff`. Format is `"{{ ['in_octets', 'uptime'] }}"`          |
 | colors (bool) |   Choices: `yes` or `no`, Default: `yes`   | Output colored `diff` output. This requires the Python package `colorama` to be installed on the Ansible control machine.          |
 
