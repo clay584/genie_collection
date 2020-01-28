@@ -1,7 +1,7 @@
 ---
 
 - hosts: all
-  gather_facts: no
+  gather_facts: false
   connection: local
   tasks:
   - name: Test Learn Genie
@@ -19,10 +19,6 @@
     debug:
       msg: "{{ genie1 }}"
 
-#  - name: Wait for manual changes for testing
-#    pause:
-#      seconds: 500
-
   - name: Test Learn Genie 2
     learn_genie:
       host: "{{ ansible_host }}"
@@ -33,11 +29,11 @@
       os: nxos
       feature: "{{ feature }}"
       compare_to: "{{ genie1 }}"
-#      exclude: "{{ ['in_requests_pkts'] }}"
+      # exclude: "{{ ['in_requests_pkts'] }}"
       no_default_exclusion: true
-      colors: yes
+      colors: false
     register: genie2
-    diff: yes
+    diff: false
 
   - name: Debug2
     debug:
