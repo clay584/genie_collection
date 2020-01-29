@@ -62,7 +62,7 @@ will be in this collection.
 This collection will require the following on the Ansible control machine:
 
 - Python 3.4+
-- Ansible 2.8+
+- Ansible 2.9+
 - pyATS
 - Genie
 - colorama
