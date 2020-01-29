@@ -4,7 +4,7 @@
   gather_facts: false
   connection: local
   tasks:
-  - name: Test Learn Genie
+  - name: Learn Genie - 1st Run
     learn_genie:
       host: "{{ ansible_host }}"
       port: 8181
@@ -12,14 +12,18 @@
       username: admin
       password: Admin_1234!
       os: nxos
-      feature: "{{ feature }}"
+      feature: ospf
     register: genie1
 
-#  - name: Debug1
+#  - name: Debug Genie
 #    debug:
-#      msg: "{{ genie1 }}"
+#      msg: "{{ genie_arp1 }}"
 
-  - name: Test Learn Genie 2
+  - name: pause for changes
+    pause:
+      minutes: 1
+
+  - name: Learn Genie with Diff
     learn_genie:
       host: "{{ ansible_host }}"
       port: 8181
@@ -27,12 +31,8 @@
       username: admin
       password: Admin_1234!
       os: nxos
-      feature: "{{ feature }}"
+      feature: ospf
       compare_to: "{{ genie1 }}"
-      # exclude: "{{ ['in_requests_pkts'] }}"
-      no_default_exclusion: true
-      colors: true
-    register: genie2
     diff: true
 
 #  - name: Debug2
