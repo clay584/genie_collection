@@ -78,7 +78,7 @@ Please follow these instructions to ensure that the filter plugin will function 
 3. Activate the virtual environment.
     - `source .venv/bin/activate`
 4. Install the required Python packages.
-    - pip install ansible pyats genie colorama
+    - `pip install ansible pyats genie colorama`
 5. Deactivate and reactivate the Python virtual environment.
     - `deactivate && source .venv/bin/activate`
 6. Install Ansible Collection
