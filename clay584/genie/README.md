@@ -339,11 +339,18 @@ Make sure to read in the parse_genie role before you attempt to use it later in 
     
 	  tasks:
 	  - name: Read in parse_genie role
-		include_role:
-		  name: clay584.parse_genie
+		collections:
+		  - clay584.genie
 		  
     ...trunctated...
 
+**There is a stupid bug in Ansible, which the Ansible maintainers have listed as "by design", 
+whereby modules and such can be referenced by their short-name, but filter plugins must be reference 
+by their fully qualified name. So, when using the parse_genie filter plugin, you must use it in the following way.**
+
+```
+"{{ show_cli_output | clay584.genie.parse_genie(command='show version', os='iosxe') }}"
+```
 
 #### Short Example
 To convert the output of a network device CLI command, use the `parse_genie` filter as shown in this example
@@ -351,7 +358,7 @@ To convert the output of a network device CLI command, use the `parse_genie` fil
 
 Converting CLI output of the `show version` command from a Cisco IOS-XE device to structured data::
 
-    {{ cli_output | parse_genie(command='show version', os='iosxe') }}
+    {{ cli_output | clay584.genie.parse_genie(command='show version', os='iosxe') }}
 
 The above example would yield the following:
 
@@ -469,7 +476,7 @@ Playbook:
 	
 	  - name: Debug Genie Filter
 		debug:
-		  msg: "{{ show_version_output | parse_genie(command='show version', os='iosxe') }}"
+		  msg: "{{ show_version_output | clay584.genie.parse_genie(command='show version', os='iosxe') }}"
 		delegate_to: localhost
 
 
@@ -547,7 +554,7 @@ Playbook:
 	
 	  - name: Print Structured Data
 		debug:
-		  msg: "{{ arp_output['stdout'][0] | parse_genie(command='show arp vrf Mgmt-intf', os='iosxe') }}"
+		  msg: "{{ arp_output['stdout'][0] | clay584.genie.parse_genie(command='show arp vrf Mgmt-intf', os='iosxe') }}"
 		delegate_to: localhost
 
 Output:
@@ -805,6 +812,8 @@ Playbook:
 
 - hosts: localhost
   connection: local
+  collections:
+    - clay584.genie
   vars:
     out_ios_sla: |
       IPSLAs Latest Operation Summary
@@ -818,10 +827,6 @@ Playbook:
       *2           icmp-echo       10.0.0.2          RTT=1              OK              3 seconds ago
 
   tasks:
-    - name: Include Parse Genie Role
-      include_role:
-        name: clay584.parse_genie
-
     - name: Include vars file that has generic tabular command metadata
       include_vars:
         file: parse_genie_generic_commands.yml
@@ -829,7 +834,7 @@ Playbook:
 
     - name: Test Genie Filter for generic tabular data
       debug:
-        msg: "{{ out_ios_sla | parse_genie(command='test show ip sla summary', os='ios', generic_tabular=True, generic_tabular_metadata=parse_genie) }}"
+        msg: "{{ out_ios_sla | clay584.genie.parse_genie(command='test show ip sla summary', os='ios', generic_tabular=True, generic_tabular_metadata=parse_genie) }}"
       delegate_to: localhost
 
 ```
