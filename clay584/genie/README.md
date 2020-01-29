@@ -28,30 +28,63 @@ created Ansible Collections, this has been added to this collection. The other p
 backward-compatibility, but no further updates will be done to that project. All future work on `parse_genie` 
 will be in this collection.
 
-## Installation/Prerequisites
+## Prerequisites
 
+This collection will require the following on the Ansible control machine:
+
+- Python 3.4+
+- Ansible 2.8+
+- pyATS
+- Genie
+- colorama
+
+## Installation
+
+Please follow these instructions to ensure that the filter plugin will function with your playbooks:
+
+1. Create a directory for your playbook and go into it.
+    - `mkdir my_playbook && cd my_playbook`
+2. Create a virtual environment.
+    - `python3 -m venv .venv`
+3. Activate the virtual environment.
+    - `source .venv/bin/activate`
+4. Install the required Python packages.
+    - pip install ansible pyats genie colorama
+5. Deactivate and reactivate the Python virtual environment.
+    - `deactivate && source .venv/bin/activate`
 
 
 ## Usage
 
-
 ### Learn Genie Module
 
-
+TBD
 
 #### Module Parameters
+
+**These module parameters are in a Markdown table, and don't display correctly except on Github.
+Please see this [link](https://github.com/clay584/genie_collection/blob/master/clay584/genie/README.md) for this table to display correctly.**
+
+  test | test2
+  :----: | :----:
+  this is a test | this is a test2
+  blah | blah2
+
+
 | Parameter     | Choices/Defaults | Comments      |
 | ------------- | :-------------:    | ------------- |
 | host (string)  |      | The network device hostname/IP address.          |
-| port (int)  | Choices: 1-65,535, Default: 22     | The port to connect to.          |
-| protocol (str)  | Choices: telnet, ssh, Default: ssh     | The protocol used for connectivity to the device.         |
+| port (int)  | Choices: `1-65,535`, Default: `22`     | The port to connect to.          |
+| protocol (str)  | Choices: `telnet`, `ssh`, Default: `ssh`     | The protocol used for connectivity to the device.         |
 | username (string) |      | The username for connecting to the device with.          |
 | password (string) |      | The password for connecting to the device with.          |
 | os (string) |   Choices: Any of the supported Cisco Genie operating systems.   | The operating system of the network device.          |
-| feature (string) |   Choices: Any of the supported Cisco Genie Learn features.   | The network feature to learn (i.e. - arp, interface, bgp).          |
+| feature (string) |   Choices: Any of the supported Cisco Genie Learn features.   | The network feature to learn (i.e. - `arp`, `interface`, `bgp`).          |
 | compare_to (dict) |  Previous `learn_genie` registered output.    | The output as collected from the `learn_genie` module with Ansible `register`. This is needed in order to `diff` two `learn_genie` runs.          |
 | exclude (list) |  List of noisy dict keys to exclude from `diff`.    | The default will use Genie's built-in defaults. This can be used to exclude additional keys from the `diff`. Format is `"{{ ['in_octets', 'uptime'] }}"`          |
+| no_default_exclusion (bool) |   Choices: `yes` or `no`, Default: `no`   | If `yes`, this will not exclude any keys from the `genie diff` except those defined in the `exclude` module parameter.          |
 | colors (bool) |   Choices: `yes` or `no`, Default: `yes`   | Output colored `diff` output. This requires the Python package `colorama` to be installed on the Ansible control machine.          |
+
 
 ### Parse Genie Filter Plugin
 

@@ -15,9 +15,9 @@
       feature: "{{ feature }}"
     register: genie1
 
-  - name: Debug1
-    debug:
-      msg: "{{ genie1 }}"
+#  - name: Debug1
+#    debug:
+#      msg: "{{ genie1 }}"
 
   - name: Test Learn Genie 2
     learn_genie:
@@ -31,10 +31,10 @@
       compare_to: "{{ genie1 }}"
       # exclude: "{{ ['in_requests_pkts'] }}"
       no_default_exclusion: true
-      colors: false
+      colors: true
     register: genie2
-    diff: false
+    diff: true
 
-  - name: Debug2
-    debug:
-      msg: "{{ genie2 }}"
+#  - name: Debug2
+#    debug:
+#      msg: "{{ genie2 }}"
