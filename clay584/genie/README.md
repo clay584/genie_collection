@@ -81,6 +81,8 @@ Please follow these instructions to ensure that the filter plugin will function 
     - pip install ansible pyats genie colorama
 5. Deactivate and reactivate the Python virtual environment.
     - `deactivate && source .venv/bin/activate`
+6. Install Ansible Collection
+    - `ansible-galaxy collection install clay584.genie`
 
 
 # Usage
@@ -107,6 +109,8 @@ module in order to take advantage of the `genie diff` functionality.
 - hosts: all
   gather_facts: false
   connection: local
+  collections:
+   - clay584.genie
   tasks:
   - name: Learn Genie - ARP
     learn_genie:
@@ -381,6 +385,8 @@ Playbook:
 	
 	- hosts: localhost
 	  connection: local
+	  collections:
+        - clay584.genie
 	  vars:
 		show_version_output: |
 		  Cisco IOS XE Software, Version 16.05.01b
@@ -440,11 +446,6 @@ Playbook:
 	
 		  Configuration register is 0x2102
 	
-	  tasks:
-	  - name: Read in parse_genie role
-		include_role:
-		  name: clay584.parse_genie
-	
 	  - name: Debug Genie Filter
 		debug:
 		  msg: "{{ show_version_output | parse_genie(command='show version', os='iosxe') }}"
@@ -459,8 +460,6 @@ Output:
 	
 	TASK [Gathering Facts] *******************************************************************
 	ok: [localhost]
-	
-	TASK [Read in parse_genie role] **********************************************************
 	
 	TASK [Debug Genie Filter] ****************************************************************
 	ok: [localhost -> localhost] => {
@@ -517,11 +516,9 @@ Playbook:
 	
 	- hosts: csr1000v
 	  gather_facts: False
+	  collections:
+        - clay584.genie
 	  tasks:
-	  - name: Read in parse_genie role
-		include_role:
-		  name: clay584.parse_genie
-	
 	  - name: Get Data From Device
 		ios_command:
 		  commands: show arp vrf Mgmt-intf
@@ -537,8 +534,6 @@ Output:
 	$ ansible-playbook -i inventory playbook.yml
 	
 	PLAY [csr1000v] **************************************************************************
-	
-	TASK [Read in parse_genie role] **********************************************************
 	
 	TASK [Get Data From Device] **************************************************************
 	ok: [csr1000v]
