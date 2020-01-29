@@ -99,7 +99,7 @@ module in order to take advantage of the `genie diff` functionality.
 
 #### Module Parameters
 
-![Learn Genie Parameters](learn_genie_params.png)
+![Learn Genie Parameters](https://github.com/clay584/genie_collection/raw/master/clay584/genie/learn_genie_params.png)
 
 #### Examples
 
@@ -264,7 +264,7 @@ sbx-nxos-mgmt.cisco.com    : ok=3    changed=1    unreachable=0    failed=0    s
 If the module parameter `colors` is not set to `false` and `colorama` is installed, the diff output 
 will be colored.
 
-![Colored Diff Output](colored_diff.png)
+![Colored Diff Output](https://github.com/clay584/genie_collection/raw/master/clay584/genie/colored_diff.png)
 
 ## Parse Genie Filter Plugin
 
