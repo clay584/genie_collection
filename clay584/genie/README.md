@@ -96,6 +96,27 @@ appropriate the `register` the output from the task in your playbook. That regis
 used in subsequent tasks or plays. Also, you can use the registered output in later runs of the `learn_genie` 
 module in order to take advantage of the `genie diff` functionality.
 
+#### A Note About Ansible Interpreter
+
+There are some silly Ansible settings regarding localhost settings and `ansible_python_interpreter` 
+and what you have to do in order to use your virtual environment on localhost when `connection: local`. 
+
+You will have to set the `ansible_python_interpreter` to the current playbook interpreter, either via 
+the ansible.cfg file or via the inventory file.
+
+Here is an example:
+
+```
+all:
+  hosts:
+    sbx-nxos-mgmt.cisco.com:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+```
+
+
+[Here](https://docs.ansible.com/ansible/latest/inventory/implicit_localhost.html) is the documentation 
+around this setting.
 
 #### Module Parameters
 
