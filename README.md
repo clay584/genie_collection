@@ -1,7 +1,7 @@
 # Cisco Genie Ansible Collection (Unofficial)
 
 [![Published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/clay584/genie_collection)
-![Ansible Version](https://img.shields.io/badge/ansible-%3E%3D2.8-blue.svg)
+![Ansible Version](https://img.shields.io/badge/ansible-%3E%3D2.9-blue.svg)
 ![Python Version](https://img.shields.io/badge/python-%3E%3D3.4-blue.svg)
 
 This is an Ansible collection that brings the functionality of Cisco's pyATS and Genie 
