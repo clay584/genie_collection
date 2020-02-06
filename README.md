@@ -7,6 +7,9 @@
 This is an Ansible collection that brings the functionality of Cisco's pyATS and Genie 
 libraries to Ansible users.
 
+For more information on the Cisco pyATS project, see [https://developer.cisco.com/docs/pyats/
+](https://developer.cisco.com/docs/pyats/)
+
 - [Cisco Genie Ansible Collection (Unofficial)](#cisco-genie-ansible-collection--unofficial-)
   * [What's in this Collection?](#what-s-in-this-collection-)
     + [Learn Genie Ansible Module](#learn-genie-ansible-module)
