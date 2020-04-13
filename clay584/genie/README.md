@@ -355,6 +355,12 @@ by their fully qualified name. So, when using the parse_genie filter plugin, you
 "{{ show_cli_output | clay584.genie.parse_genie(command='show version', os='iosxe') }}"
 ```
 
+For deeper abstraction, you might want to add `platform` to `genie_parse`.
+
+```
+"{{ show_cli_output | clay584.genie.parse_genie(command='show environment all', os='iosxe', platform='asr1k') }}"
+```
+
 #### Short Example
 To convert the output of a network device CLI command, use the `parse_genie` filter as shown in this example
 (do not use abbreviated CLI commands).
