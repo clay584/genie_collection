@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright: (c) 2020, Clay Curtis <jccurtis@presidio.com>
+# Copyright: (c) 2023, Clay Curtis <jccurtis@presidio.com>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 ANSIBLE_METADATA = {
@@ -253,7 +253,7 @@ def run_module():
             this_class = getattr(this_module, package_name)
             this_excludes = this_class.exclude
             default_excludes.update({i: this_excludes})
-        except AttributeError:
+        except (AttributeError, ModuleNotFoundError):
             default_excludes.update({i: []})
 
         # this_module = __import__(modulename)
